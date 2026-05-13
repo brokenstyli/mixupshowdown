@@ -98,8 +98,7 @@
 
     /*
         Important:
-        Leave bottom controls area uncovered.
-        The YouTube controls sit near the bottom.
+        Leave controls accessible
     */
     .blind-cover {
         position: absolute;
@@ -304,7 +303,7 @@ function loadVideos() {
         .classList.remove("revealed");
 
     document.getElementById("status").textContent =
-        "Videos loaded successfully.";
+        "Videos loaded successfully";
 }
 
 function revealPlayer(wrapperID) {
