@@ -106,7 +106,7 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: calc(100%);
+        height: 100%;
         background: black;
         z-index: 5;
         pointer-events: none;
@@ -119,7 +119,7 @@
 
     .player-label {
         position: absolute;
-        top: 12px;
+        top: 36px;
         left: 12px;
         z-index: 10;
         background: rgba(0,0,0,0.75);
@@ -142,12 +142,12 @@
     <input
         id="link1"
         type="text"
-        placeholder="YouTube URL for Player A">
+        placeholder="YouTube URL for Video A">
 
     <input
         id="link2"
         type="text"
-        placeholder="YouTube URL for Player B">
+        placeholder="YouTube URL for Video B">
 
     <button class="load-btn" onclick="loadVideos()">
         Load Videos
@@ -162,7 +162,7 @@
         <div class="player-wrapper" id="wrapper1">
 
             <div class="player-label">
-                Player A
+                Video A
             </div>
 
             <div class="blind-cover"></div>
@@ -179,7 +179,7 @@
             class="reveal-a-btn"
             onclick="revealPlayer('wrapper1')">
 
-            Reveal Player A
+            Reveal Video A
 
         </button>
 
@@ -191,7 +191,7 @@
         <div class="player-wrapper" id="wrapper2">
 
             <div class="player-label">
-                Player B
+                Video B
             </div>
 
             <div class="blind-cover"></div>
@@ -208,7 +208,7 @@
             class="reveal-b-btn"
             onclick="revealPlayer('wrapper2')">
 
-            Reveal Player B
+            Reveal Video B
 
         </button>
 
