@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Blind YouTube Showdown</title>
+
+<style>
+    body {
+        background: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 24px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    input {
+        width: 340px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    button {
+        border: none;
+        border-radius: 8px;
+        padding: 12px 18px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .load-btn {
+        background: #ff3333;
+        color: white;
+    }
+
+    .reveal-a-btn {
+        background: #2d7fff;
+        color: white;
+    }
+
+    .reveal-b-btn {
+        background: #35aa55;
+        color: white;
+    }
+
+    .status {
+        text-align: center;
+        margin-bottom: 24px;
+        color: #ccc;
+    }
+
+    .players {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .player-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .player-wrapper {
+        position: relative;
+        width: 560px;
+        height: 315px;
+        overflow: hidden;
+        border-radius: 12px;
+        background: black;
+        box-shadow: 0 0 20px rgba(0,0,0,0.45);
+    }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /*
+        Important:
+        Leave bottom controls area uncovered.
+        The YouTube controls sit near the bottom.
+    */
+    .blind-cover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 42px);
+        background: black;
+        z-index: 5;
+        pointer-events: none;
+        transition: opacity 0.35s ease;
+    }
+
+    .revealed .blind-cover {
+        opacity: 0;
+    }
+
+    .player-label {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        background: rgba(0,0,0,0.75);
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Blind YouTube Showdown</h1>
+
+<div class="status" id="status">
+    Paste two YouTube links and press Load Videos
+</div>
+
+<div class="controls">
+    <input
+        id="link1"
+        type="text"
+        placeholder="YouTube URL for Player A">
+
+    <input
+        id="link2"
+        type="text"
+        placeholder="YouTube URL for Player B">
+
+    <button class="load-btn" onclick="loadVideos()">
+        Load Videos
+    </button>
+</div>
+
+<div class="players">
+
+    <!-- PLAYER A -->
+    <div class="player-section">
+
+        <div class="player-wrapper" id="wrapper1">
+
+            <div class="player-label">
+                Player A
+            </div>
+
+            <div class="blind-cover"></div>
+
+            <iframe
+                id="player1"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+        <button
+            class="reveal-a-btn"
+            onclick="revealPlayer('wrapper1')">
+
+            Reveal Player A
+
+        </button>
+
+    </div>
+
+    <!-- PLAYER B -->
+    <div class="player-section">
+
+        <div class="player-wrapper" id="wrapper2">
+
+            <div class="player-label">
+                Player B
+            </div>
+
+            <div class="blind-cover"></div>
+
+            <iframe
+                id="player2"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+        <button
+            class="reveal-b-btn"
+            onclick="revealPlayer('wrapper2')">
+
+            Reveal Player B
+
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+function extractVideoID(url) {
+
+    try {
+
+        url = url.trim();
+
+        // Raw ID support
+        if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
+            return url;
+        }
+
+        const parsed = new URL(url);
+
+        // youtu.be links
+        if (parsed.hostname.includes("youtu.be")) {
+            return parsed.pathname.slice(1).split("/")[0];
+        }
+
+        // shorts
+        if (parsed.pathname.includes("/shorts/")) {
+            return parsed.pathname
+                .split("/shorts/")[1]
+                .split("/")[0];
+        }
+
+        // embed
+        if (parsed.pathname.includes("/embed/")) {
+            return parsed.pathname
+                .split("/embed/")[1]
+                .split("/")[0];
+        }
+
+        // standard watch?v=
+        return parsed.searchParams.get("v");
+
+    } catch (err) {
+
+        console.error(err);
+        return null;
+    }
+}
+
+function createEmbedURL(videoID) {
+
+    const params = [
+        "controls=1",
+        "rel=0",
+        "modestbranding=1",
+        "playsinline=1"
+    ];
+
+    return `https://www.youtube.com/embed/${videoID}?${params.join("&")}`;
+}
+
+function loadVideos() {
+
+    const link1 =
+        document.getElementById("link1").value;
+
+    const link2 =
+        document.getElementById("link2").value;
+
+    const id1 = extractVideoID(link1);
+    const id2 = extractVideoID(link2);
+
+    if (!id1 || !id2) {
+
+        document.getElementById("status").textContent =
+            "Invalid YouTube link detected.";
+
+        return;
+    }
+
+    document.getElementById("player1").src =
+        createEmbedURL(id1);
+
+    document.getElementById("player2").src =
+        createEmbedURL(id2);
+
+    // Reset reveal state
+    document.getElementById("wrapper1")
+        .classList.remove("revealed");
+
+    document.getElementById("wrapper2")
+        .classList.remove("revealed");
+
+    document.getElementById("status").textContent =
+        "Videos loaded successfully.";
+}
+
+function revealPlayer(wrapperID) {
+
+    document.getElementById(wrapperID)
+        .classList.add("revealed");
+}
+</script>
+
+</body>
+</html>
